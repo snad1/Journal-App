@@ -7,16 +7,21 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.example.android.journalapp.Database.AppDatabase;
 import com.example.android.journalapp.Database.NoteEntry;
@@ -27,24 +32,36 @@ import java.util.List;
 
 import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
-public class MainActivity extends AppCompatActivity implements CustomAdapter.ItemClickListener{
+public class Main2Activity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, CustomAdapter.ItemClickListener {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-    private RecyclerView recyclerView;
     private CustomAdapter adapter;
 
     private AppDatabase appDatabase;
 
-    private ProgressBar progressBar;
     private FirebaseAuth.AuthStateListener authListener;
     private FirebaseAuth auth;
+
+    TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);*/
+        setContentView(R.layout.activity_main2);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        textView = findViewById(R.id.textView);
+
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
         auth = FirebaseAuth.getInstance();
 
@@ -58,19 +75,22 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.Ite
                 if (user == null) {
                     // user auth state is changed - user is null
                     // launch login activity
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    startActivity(new Intent(Main2Activity.this, LoginActivity.class));
                     finish();
                 }
             }
         };
 
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        if (user != null)
+            textView.setText(user.getEmail());
+
+        ProgressBar progressBar = findViewById(R.id.progressBar);
 
         if (progressBar != null) {
             progressBar.setVisibility(View.GONE);
         }
 
-        recyclerView = findViewById(R.id.recyclerview);
+        RecyclerView recyclerView = findViewById(R.id.recyclerview);
 
         // Set the layout for the RecyclerView to be a linear layout, which measures and
         // positions items within a RecyclerView into a linear list
@@ -122,14 +142,46 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.Ite
             @Override
             public void onClick(View view) {
                 // Create a new intent to start an AddTaskActivity
-                Intent addNoteIntent = new Intent(MainActivity.this, AddNoteActivity.class);
+                Intent addNoteIntent = new Intent(Main2Activity.this, AddNoteActivity.class);
                 startActivity(addNoteIntent);
             }
         });
 
         appDatabase = AppDatabase.getInstance(getApplicationContext());
         setupViewModel();
+    }
 
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_accout_settings) {
+            startActivity(new Intent(getApplicationContext(),SettingsActivity.class));
+
+        } else if (id == R.id.nav_sign_out) {
+            auth.signOut();
+            DrawerLayout drawer = findViewById(R.id.drawer_layout);
+            drawer.closeDrawer(GravityCompat.START);
+            auth.addAuthStateListener(authListener);
+        }
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
     @Override
@@ -168,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements CustomAdapter.Ite
     @Override
     public void onItemClickListener(int itemId) {
         // Launch AddTaskActivity adding the itemId as an extra in the intent
-        Intent intent = new Intent(MainActivity.this, ViewNoteActivity.class);
+        Intent intent = new Intent(Main2Activity.this, ViewNoteActivity.class);
         intent.putExtra(AddNoteActivity.EXTRA_NOTE_ID, itemId);
         startActivity(intent);
     }

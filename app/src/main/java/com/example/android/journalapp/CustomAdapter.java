@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.journalapp.Database.NoteEntry;
 
@@ -69,7 +70,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
         void onItemClickListener(int itemId);
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,View.OnLongClickListener{
 
         TextView txttitle,txtcreated_at;
 
@@ -79,12 +80,19 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.ViewHolder
             txttitle = (TextView) itemView.findViewById(R.id.txt_title);
             txtcreated_at = (TextView) itemView.findViewById(R.id.txt_date);
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
             int elementId = noteEntries.get(getAdapterPosition()).getId();
             itemClickListener.onItemClickListener(elementId);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            Toast.makeText(context, "Swipe Left or right to delete", Toast.LENGTH_SHORT).show();
+            return true;
         }
     }
 }

@@ -52,6 +52,8 @@ public class AddNoteActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra(EXTRA_NOTE_ID)){
 //            btnadd.setText("Update");
 
+            setTitle("Update");
+
             AddNoteViewModelFactory factory = new AddNoteViewModelFactory(getApplication(),appDatabase, noteId);
             final AddNoteViewModel viewModel
                     = ViewModelProviders.of(this, factory).get(AddNoteViewModel.class);
